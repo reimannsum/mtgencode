@@ -623,7 +623,24 @@ class Card:
 
         outstr = ''
         if for_html:
-            outstr += '<div class="card-text">\n'
+            outstr += '<div class="card-text'
+            if len(self.get_colors())>1:
+                outstr += ' multi"'
+            elif 'R' in self.get_colors():
+                outstr += ' red"'
+            elif 'U' in self.get_colors():
+                outstr += ' blue"'
+            elif 'B' in self.get_colors():
+                outstr += ' black"'
+            elif 'G' in self.get_colors():
+                outstr += ' green"'
+            elif 'W' in self.get_colors():
+                outstr += ' white"'
+            elif "land" in self.get_types():
+                    outstr += ' land"'
+            else:
+                outstr += ' colorless"'
+            outstr += '>\n'
 
         if gatherer:
             cardname = titlecase(transforms.name_unpass_1_dashes(self.__dict__[field_name]))
