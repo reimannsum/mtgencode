@@ -1,5 +1,6 @@
 box_width = 350
-id_lables = ["white_anchor", "blue_anchor", "black_anchor", "red_anchor", "green_anchor", "multi_anchor", "colorless_anchor", "lands_anchor"]
+id_lables = ["white_", "blue_", "black_", "red_", "green_", "multi_", "colorless_", "lands_"]
+type_lables  = ["creature", "enchantment", "instant", "sorcery", "artifact", "planeswalker"]
 html_prepend = """<!DOCTYPE html>
 <head>
     <style>
@@ -28,25 +29,25 @@ html_prepend = """<!DOCTYPE html>
 	        padding: 3px;
 	        border: 3px solid #000000;
 	    }
-	    #red{
+	    .red{
 	    	border-color:red;
 	    }
-	    #blue{
+	    .blue{
 	    	border-color:blue;
 	    }
-	    #green{
+	    .green{
 	    	border-color:lawngreen;
 	    }
-	    #white{
+	    .white{
 	    	border-color:yellow;
 	    }
-	    #multi{
+	    .multi{
 	    	border-color:gold;
 	    }
-	    #colorless{
+	    .colorless{
 	    	border-color:lightgrey;
 	    }
-	    #lands{
+	    .lands{
 	    	border-color:darkgoldenrod;
 	    }
 
@@ -492,14 +493,14 @@ html_prepend = """<!DOCTYPE html>
 </head>
 <body>
 	<ul id="top">
-			<li style="background-color:yellow;"><a href="#white_anchor" style="color:black">White Cards</a></li>
-			<li style="background-color:blue;"><a href="#blue_anchor">Blue Cards</a></li>
-			<li style="background-color:black;"><a href="#black_anchor">Black Cards</a></li>
-			<li style="background-color:red;"><a href="#red_anchor">Red Cards</a></li>
-			<li style="background-color:green;"><a href="#green_anchor">Green Cards</a></li>
-			<li style="background-color:gold;"><a href="#multi_anchor" style="color:black">Multi-colored Cards</a></li>
-			<li style="background-color:lightgrey;"><a href="#colorless_anchor" style="color:black">Colorless Cards</a></li>
-			<li style="background-color:darkgoldenrod;"><a href="#lands_anchor" style="color:black">Lands Cards</a></li>
+			<li style="background-color:yellow;"><a href="#white_" style="color:black">White Cards</a></li>
+			<li style="background-color:blue;"><a href="#blue_">Blue Cards</a></li>
+			<li style="background-color:black;"><a href="#black_">Black Cards</a></li>
+			<li style="background-color:red;"><a href="#red_">Red Cards</a></li>
+			<li style="background-color:green;"><a href="#green_">Green Cards</a></li>
+			<li style="background-color:gold;"><a href="#multi_" style="color:black">Multi-colored Cards</a></li>
+			<li style="background-color:lightgrey;"><a href="#colorless_" style="color:black">Colorless Cards</a></li>
+			<li style="background-color:darkgoldenrod;"><a href="#lands_" style="color:black">Lands Cards</a></li>
 	</ul>
 	<hr>
 """
