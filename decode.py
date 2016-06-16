@@ -91,8 +91,15 @@ def main(fname, oname = None, verbose = True, encoding = 'std',
             # seperate the write function to allow for writing smaller chunks of cards at a time
             segments = sort_colors(cards)
             for i in range(len(segments)):
-                # sort color by CMC
+                # sort color by type
                 segments[i] = sort_type(segments[i])
+
+
+                ## add internal loop to handle each card type and/or CMC
+                ## for adding navigation anchors to each subsection
+
+
+
                 # this allows card boxes to be colored for each color 
                 # for coloring of each box seperately cardlib.Card.format() must change non-minimaly
                 writer.write('<div id="' + utils.segment_ids[i] + '">')
@@ -201,6 +208,8 @@ def main(fname, oname = None, verbose = True, encoding = 'std',
                 colorless_cards += [card]
         return[white_cards, blue_cards, black_cards, red_cards, green_cards, multi_cards, colorless_cards, lands]
 
+
+    # TODO: have this return each sorted set. 
     def sort_type(card_set):
         sorting = ["creature", "enchantment", "instant", "sorcery", "artifact", "planeswalker"]
         sorted_cards = [[],[],[],[],[],[],[]]
@@ -213,6 +222,7 @@ def main(fname, oname = None, verbose = True, encoding = 'std',
                     break
             else:
                 sorted_cards[6] += [card]
+        # return sorted_cards
         for value in sorted_cards:
             for card in value:
                 sorted_set += [card]
@@ -229,6 +239,9 @@ def main(fname, oname = None, verbose = True, encoding = 'std',
                 sorted_cards += [[]]
             # add card to correct set of CMC values
             sorted_cards[card.get_cmc()] += [card]
+
+        #return sorted_cards
+        
         # combine each set of CMC valued cards together
         for value in sorted_cards:
             for card in value:
