@@ -35,22 +35,23 @@ def main(fname):
 
     name_avg = name_avg / float(nonempty)
     card_avg = card_avg / float(nonempty)
-    
-    print str(nonempty) + ' cards'
-    print '-- names --'
-    print 'avg distance:   ' + str(name_avg)
-    print 'num duplicates: ' + str(name_dupes)
-    print '-- cards --'
-    print 'avg distance:   ' + str(card_avg)
-    print 'num duplicates: ' + str(card_dupes)
-    print '----'
+
+    print(str(nonempty) + ' cards')
+    print('-- names --')
+    print('avg distance:   ' + str(name_avg))
+    print('num duplicates: ' + str(name_dupes))
+    print('-- cards --')
+    print('avg distance:   ' + str(card_avg))
+    print('num duplicates: ' + str(card_dupes))
+    print('----')
+
 
 if __name__ == '__main__':
     
     import argparse
     parser = argparse.ArgumentParser()
     
-    parser.add_argument('infile', #nargs='?'. default=None,
+    parser.add_argument('infile', # nargs='?'. default=None,
                         help='data file to process')
 
     args = parser.parse_args()
