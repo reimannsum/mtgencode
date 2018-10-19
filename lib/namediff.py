@@ -6,9 +6,9 @@ import difflib
 import os
 import multiprocessing
 
-import utils
-import jdecode
-import cardlib
+import lib.utils as utils
+import lib.jdecode as jdecode
+import lib.cardlib as cardlib
 
 libdir = os.path.dirname(os.path.realpath(__file__))
 datadir = os.path.realpath(os.path.join(libdir, '../data'))
@@ -59,10 +59,10 @@ class Namediff:
         self.cardstrings = {}
 
         if self.verbose:
-            print 'Setting up namediff...'
+            print('Setting up namediff...')
 
         if self.verbose:
-            print '  Reading names from: ' + json_fname
+            print('  Reading names from: ' + json_fname)
         json_srcs = jdecode.mtg_open_json(json_fname, verbose)
         namecount = 0
         for json_cardname in sorted(json_srcs):
@@ -81,7 +81,7 @@ class Namediff:
                     jnum = ''
                     
                 if name in self.names:
-                    print '  Duplicate name ' + name + ', ignoring.'
+                    print('  Duplicate name ' + name + ', ignoring.')
                 else:
                     self.names[name] = jname
                     self.cardstrings[name] = card.encode()
@@ -91,14 +91,14 @@ class Namediff:
                         self.codes[name] = ''
                     namecount += 1
 
-        print '  Read ' + str(namecount) + ' unique cardnames'
-        print '  Building SequenceMatcher objects.'
-        
+        print('  Read ' + str(namecount) + ' unique cardnames')
+        print('  Building SequenceMatcher objects.')
+
         self.matchers = [difflib.SequenceMatcher(b=n, autojunk=False) for n in self.names]
         self.card_matchers = [difflib.SequenceMatcher(b=self.cardstrings[n], autojunk=False) for n in self.cardstrings]
 
-        print '... Done.'
-    
+        print('... Done.')
+
     def nearest(self, name, n=3):
         return f_nearest(name, self.matchers, n)
 
