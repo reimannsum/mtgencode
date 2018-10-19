@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import sys
 import os
 import shutil
 
@@ -18,7 +17,7 @@ def identify_checkpoints(basedir, ident):
             continue
         if not (path[:13] == 'lm_lstm_epoch' and path[-4:] == '.txt'):
             continue
-        if not ident in path:
+        if ident not in path:
             continue
         # attempt super hacky parsing
         inner = path[13:-4]
@@ -83,9 +82,9 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     
-    parser.add_argument('basedir', #nargs='?'. default=None,
+    parser.add_argument('basedir', # nargs='?'. default=None,
                         help='base rnn directory, must contain sample.lua')
-    parser.add_argument('targetdir', #nargs='?', default=None,
+    parser.add_argument('targetdir', # nargs='?', default=None,
                         help='checkpoint directory, all subdirectories will be processed')
     parser.add_argument('-c', '--copy_cp', action='store_true', 
                         help='copy checkpoints used to generate the output files')
