@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 import sys
 import os
+import lib.jdecode as jdecode
+from lib.namediff import Namediff
+from lib.cbow import CBOW
 
 libdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../lib')
 sys.path.append(libdir)
-import utils
-import jdecode
-from namediff import Namediff
-from cbow import CBOW
+
 
 def main(fname, oname, verbose = True, parallel = True):
     # may need to set special arguments here
@@ -19,14 +19,14 @@ def main(fname, oname, verbose = True, parallel = True):
     cbow = CBOW()
 
     if verbose:
-        print 'Computing nearest names...'
+        print('Computing nearest names...')
     if parallel:
         nearest_names = namediff.nearest_par(map(lambda c: c.name, cards), n=1)
     else:
         nearest_names = [namediff.nearest(c.name, n=1) for c in cards]
 
     if verbose:
-        print 'Computing nearest cards...'
+        print('Computing nearest cards...')
     if parallel:
         nearest_cards = cbow.nearest_par(cards, n=1)
     else:
@@ -45,7 +45,7 @@ def main(fname, oname, verbose = True, parallel = True):
     #     nearest_cards_text = [namediff.nearest_card(c, n=1) for c in cards]
 
     if verbose:
-        print '...Done.'
+        print('...Done.')
 
     # write to a file to store the data, this is a terribly long computation
     # we could also just store this same info in the cards themselves as more fields...
@@ -67,9 +67,9 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     
-    parser.add_argument('infile', #nargs='?'. default=None,
+    parser.add_argument('infile', # nargs='?'. default=None,
                         help='encoded card file or json corpus to process')
-    parser.add_argument('outfile', #nargs='?', default=None,
+    parser.add_argument('outfile', # nargs='?', default=None,
                         help='name of output file, will be overwritten')
     parser.add_argument('-v', '--verbose', action='store_true', 
                         help='verbose output')
