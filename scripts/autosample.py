@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import sys
 import os
 import subprocess
 import random
@@ -10,7 +9,7 @@ def extract_cp_name(name):
         return None
     name = name[13:-3]
     (epoch, vloss) = tuple(name.split('_'))
-    return (float(epoch), float(vloss))
+    return float(epoch), float(vloss)
 
 def sample(cp, temp, count, seed = None, ident = 'output'):
     if seed is None:
@@ -36,7 +35,7 @@ def find_best_cp(cpdir):
         fullpath = os.path.join(cpdir, path)
         if os.path.isfile(fullpath):
             extracted = extract_cp_name(path)
-            if not extracted is None:
+            if extracted is not None:
                 (epoch, vloss) = extracted
                 if best is None or vloss < best:
                     best = vloss
@@ -47,7 +46,7 @@ def process_dir(cpdir, temp, count, seed = None, ident = 'output', verbose = Fal
     if verbose:
         print('processing ' + cpdir)
     best_cp = find_best_cp(cpdir)
-    if not best_cp is None:
+    if best_cp is not None:
         sample(best_cp, temp, count, seed=seed, ident=ident)
     for path in os.listdir(cpdir):
         fullpath = os.path.join(cpdir, path)
@@ -66,9 +65,9 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     
-    parser.add_argument('rnndir', #nargs='?'. default=None,
+    parser.add_argument('rnndir', # nargs='?'. default=None,
                         help='base rnn directory, must contain sample.lua')
-    parser.add_argument('cpdir', #nargs='?', default=None,
+    parser.add_argument('cpdir', # nargs='?', default=None,
                         help='checkpoint directory, all subdirectories will be processed')
     parser.add_argument('-t', '--temperature', action='store', default='1.0',
                         help='sampling temperature')
