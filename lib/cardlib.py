@@ -2,9 +2,9 @@
 import re
 import random
 
-import utils
-import transforms
-from manalib import Manacost, Manatext
+import lib.utils as utils
+import lib.transforms as transforms
+from lib.manalib import Manacost, Manatext
 
 # Some text prettification stuff that people may not have installed
 try:
@@ -20,8 +20,10 @@ try:
     # This could me made smarter - MSE will capitalize for us after :,
     # but we still need to capitalize the first english component of an activation
     # cost that starts with symbols, such as {2U}, *R*emove a +1/+1 counter from @: etc.
+
     def cap(s):
         return s[:1].capitalize() + s[1:]
+
     # This crazy thing is actually invoked as an unpass, so newlines are still
     # encoded.
     def sentencecase(s):
@@ -35,12 +37,13 @@ try:
         return utils.newline.join(clines).replace(utils.reserved_marker, utils.x_marker)
 except ImportError:
     # non-nltk implementation provided by PAK90
+
     def uppercaseNewLineAndFullstop(string):
-        # ok, let's capitalize every letter after a full stop and newline. 
+        # ok, let's capitalize every letter after a full stop and newline.
         # first let's find all indices of '.' and '\n'
         indices = [0] # initialise with 0, since we always want to capitalise the first letter.
         newlineIndices = [0] # also need to keep track of pure newlines (for planeswalkers).
-        for i in range (len(string)):
+        for i in range(len(string)):
             if string[i] == '\\':
                 indices.append(i + 1) # we want the index of the letter after the \n, so add one.
                 newlineIndices.append(i + 1)
@@ -162,9 +165,9 @@ fmt_labeled_default = {
 # sanity test if a card's fields look plausible
 def fields_check_valid(fields):
     # all cards must have a name and a type
-    if not field_name in fields:
+    if field_name not in fields:
         return False
-    if not field_types in fields:
+    if field_types not in fields:
         return False
     # creatures have p/t, other things don't
     iscreature = False
@@ -174,7 +177,7 @@ def fields_check_valid(fields):
     if iscreature:
         return field_pt in fields
     else:
-        return not field_pt in fields
+        return field_pt not in fields
 
 
 # These functions take a bunch of source data in some format and turn
@@ -185,7 +188,7 @@ def fields_check_valid(fields):
 # Usually we want these lists to be length 1, but you never know.
 
 # Of course to make things nice and simple, that dict is the third element
-# of a triple that reports parsing success and valid success as its 
+# of a triple that reports parsing success and valid success as its
 # first two elements.
 
 # This whole things assumes the json format of mtgjson.com.
@@ -241,7 +244,7 @@ def fields_from_json(src_json, linetrans = True):
 
     # return the actual Manacost object
     if 'manaCost' in src_json:
-        cost =  Manacost(src_json['manaCost'], fmt = 'json')
+        cost = Manacost(src_json['manaCost'], fmt = 'json')
         valid = valid and cost.valid
         parsed = parsed and cost.parsed
         fields[field_cost] = [(-1, cost)]
@@ -261,7 +264,6 @@ def fields_from_json(src_json, linetrans = True):
                                            # urza's lands...
                                            .replace('"', "'").replace('-', utils.dash_marker), 
                                            src_json['subtypes']))]
-        
 
     if 'rarity' in src_json:
         if src_json['rarity'] in utils.json_rarity_map:
@@ -324,13 +326,14 @@ def fields_from_format(src_text, fmt_ordered, fmt_labeled, fieldsep):
     if fmt_labeled:
         labels = {fmt_labeled[k] : k for k in fmt_labeled}
         field_label_regex = '[' + ''.join(labels.keys()) + ']'
-    def addf(fields, fkey, fval):
+
+    def addf(cardFields, fkey, fieldVal):
         # make sure you pass a pair
-        if fval and fval[1]:
-            if fkey in fields:
-                fields[fkey] += [fval]
+        if fieldVal and fieldVal[1]:
+            if fkey in cardFields:
+                cardFields[fkey] += [fieldVal]
             else:
-                fields[fkey] = [fval]
+                cardFields[fkey] = [fieldVal]
 
     textfields = src_text.split(fieldsep)
     idx = 0
@@ -390,7 +393,7 @@ def fields_from_format(src_text, fmt_ordered, fmt_labeled, fieldsep):
 # Here's the actual Card class that other files should use.
 
 class Card:
-    '''card representation with data'''
+    """card representation with data"""
 
     def __init__(self, src, fmt_ordered = fmt_ordered_default, 
                             fmt_labeled = fmt_labeled_default, 
@@ -477,7 +480,7 @@ class Card:
             # valid but not parsed indicates that the card was apparently empty
             self.parsed = False
 
-    # These setters are invoked via name mangling, so they have to match 
+    # These setters are invoked via name mangling, so they have to match
     # the field names specified above to be used. Otherwise we just
     # always fall back to the (uninteresting) default handler.
 
@@ -624,7 +627,7 @@ class Card:
         outstr = ''
         if for_html:
             outstr += '<div class="card-text'
-            if len(self.get_colors())>1:
+            if len(self.get_colors()) > 1:
                 outstr += ' multi"'
             elif 'R' in self.get_colors():
                 outstr += ' red"'
@@ -662,11 +665,10 @@ class Card:
                 outstr += ' ' + coststr
 
             if for_html and for_forum:
-               #force for_html to false to create tootip with forum spoiler
-                outstr += ('<div class="hover_img"><a href="#">[F]</a> <span><p>' 
+                # Force for_html to false to create tootip with forum spoiler
+                outstr += ('<div class="hover_img"><a href="# >[F]</a> <span><p>'
                            + self.format(gatherer=gatherer, for_forum=for_forum, for_html=False, vdump=vdump).replace('\n', '<br>')
-                           + '</p></span></div><a href="#top" style="float: right;">back to top</a>')
-
+                           + '</p></span></div><a href="# op" style="float: right;">back to top</a>')
 
             if self.__dict__[field_rarity]:
                 if self.__dict__[field_rarity] in utils.json_rarity_unmap:
@@ -675,7 +677,6 @@ class Card:
                     rarity = self.__dict__[field_rarity]
                 outstr += ' (' + rarity + ')'
 
-            
             if vdump:
                 if not self.parsed:
                     outstr += ' _UNPARSED_'
@@ -706,13 +707,13 @@ class Card:
                 mtext = self.__dict__[field_text].text
                 mtext = transforms.text_unpass_1_choice(mtext, delimit = False)
                 mtext = transforms.text_unpass_2_counters(mtext)
-                #mtext = transforms.text_unpass_3_uncast(mtext)
+                # text = transforms.text_unpass_3_uncast(mtext)
                 mtext = transforms.text_unpass_4_unary(mtext)
                 mtext = transforms.text_unpass_5_symbols(mtext, for_forum, for_html)
                 mtext = sentencecase(mtext)
                 mtext = transforms.text_unpass_6_cardname(mtext, cardname)
                 mtext = transforms.text_unpass_7_newlines(mtext)
-                #mtext = transforms.text_unpass_8_unicode(mtext)
+                # text = transforms.text_unpass_8_unicode(mtext)
                 newtext = Manatext('')
                 newtext.text = mtext
                 newtext.costs = self.__dict__[field_text].costs
@@ -747,7 +748,7 @@ class Card:
 
         else:
             cardname = self.__dict__[field_name]
-            #cardname = transforms.name_unpass_1_dashes(self.__dict__[field_name])
+            # ardname = transforms.name_unpass_1_dashes(self.__dict__[field_name])
             if vdump and not cardname:
                 cardname = '_NONAME_'
             outstr += cardname
@@ -763,10 +764,10 @@ class Card:
                     outstr += ' _INVALID_'
 
             if for_html and for_forum:
-               #force for_html to false to create tootip with forum spoiler
-                outstr += ('<div class="hover_img"><a href="#">[F]</a> <span><p>' 
+                # Force for_html to false to create tootip with forum spoiler
+                outstr += ('<div class="hover_img"><a href="# >[F]</a> <span><p>'
                            + self.format(gatherer=gatherer, for_forum=for_forum, for_html=False, vdump=vdump).replace('\n', '<br>')
-                           + '</p></span></div><a href="#top" style="float: right;">back to top</a>')
+                           + '</p></span></div><a href="# op" style="float: right;">back to top</a>')
             
             outstr += linebreak
 
@@ -786,13 +787,13 @@ class Card:
 
                 mtext = self.__dict__[field_text].text
                 mtext = transforms.text_unpass_1_choice(mtext, delimit = True)
-                #mtext = transforms.text_unpass_2_counters(mtext)
-                #mtext = transforms.text_unpass_3_uncast(mtext)
+                # text = transforms.text_unpass_2_counters(mtext)
+                # text = transforms.text_unpass_3_uncast(mtext)
                 mtext = transforms.text_unpass_4_unary(mtext)
                 mtext = transforms.text_unpass_5_symbols(mtext, for_forum, for_html)
-                #mtext = transforms.text_unpass_6_cardname(mtext, cardname)
+                # text = transforms.text_unpass_6_cardname(mtext, cardname)
                 mtext = transforms.text_unpass_7_newlines(mtext)
-                #mtext = transforms.text_unpass_8_unicode(mtext)
+                # text = transforms.text_unpass_8_unicode(mtext)
                 newtext = Manatext('')
                 newtext.text = mtext
                 newtext.costs = self.__dict__[field_text].costs
@@ -845,7 +846,7 @@ class Card:
         #     if for_forum:
         #         outstr += linebreak
         #         # force for_html to false to create a copyable forum spoiler div
-        #         outstr += ('<div>' 
+        #         outstr += ('<div>'
         #                    + self.format(gatherer=gatherer, for_forum=for_forum, for_html=False, vdump=vdump).replace('\n', '<br>')
         #                    + '</div>')
         if for_html:
@@ -871,7 +872,7 @@ class Card:
 
         if not self.__dict__[field_cost].none:            
             outstr += ('\tcasting cost: ' 
-                       + self.__dict__[field_cost].format().replace('{','').replace('}','') 
+                       + self.__dict__[field_cost].format().replace('{', '').replace('}', '')
                        + '\n')
 
         outstr += '\tsuper type: ' + ' '.join(self.__dict__[field_supertypes] 
@@ -881,7 +882,7 @@ class Card:
 
         if self.__dict__[field_pt]:
             ptstring = utils.from_unary(self.__dict__[field_pt]).split('/')
-            if (len(ptstring) > 1): # really don't want to be accessing anything nonexistent.
+            if len(ptstring) > 1: # really don't want to be accessing anything nonexistent.
                 outstr += '\tpower: ' + ptstring[0] + '\n'
                 outstr += '\ttoughness: ' + ptstring[1] + '\n'
 
@@ -907,7 +908,7 @@ class Card:
 
             # See, the thing is, I think it's simplest and easiest to just leave it like this.
             # What could possibly go wrong?
-            newtext = newtext.replace('{','<sym-auto>').replace('}','</sym-auto>')
+            newtext = newtext.replace('{', '<sym-auto>').replace('}', '</sym-auto>')
         else:
             newtext = ''
 
@@ -916,7 +917,7 @@ class Card:
         # all of the formatted fields in a data structure and a separate wrapper
         # that actually packed them into the MSE format.
         if self.bside:
-            newtext = newtext.replace('\n','\n\t\t')
+            newtext = newtext.replace('\n', '\n\t\t')
             outstr += '\trule text:\n\t\t' + newtext + '\n'
 
             outstr += '\tstylesheet: new-split\n'
@@ -935,7 +936,7 @@ class Card:
             if not self.bside.__dict__[field_cost].none:            
                 outstr += ('\tcasting cost 2: ' 
                            + self.bside.__dict__[field_cost].format()
-                           .replace('{','').replace('}','')
+                           .replace('{', '').replace('}', '')
                            + '\n')
 
             outstr += ('\tsuper type 2: ' 
@@ -948,7 +949,7 @@ class Card:
 
             if self.bside.__dict__[field_pt]:
                 ptstring2 = utils.from_unary(self.bside.__dict__[field_pt]).split('/')
-                if (len(ptstring2) > 1): # really don't want to be accessing anything nonexistent.
+                if len(ptstring2) > 1: # really don't want to be accessing anything nonexistent.
                     outstr += '\tpower 2: ' + ptstring2[0] + '\n'
                     outstr += '\ttoughness 2: ' + ptstring2[1] + '\n'
 
@@ -969,8 +970,8 @@ class Card:
                 newtext2.text = mtext2
                 newtext2.costs = self.bside.__dict__[field_text].costs
                 newtext2 = newtext2.format()
-                newtext2 = newtext2.replace('{','<sym-auto>').replace('}','</sym-auto>')
-                newtext2 = newtext2.replace('\n','\n\t\t')
+                newtext2 = newtext2.replace('{', '<sym-auto>').replace('}', '</sym-auto>')
+                newtext2 = newtext2.replace('\n', '\n\t\t')
                 outstr += '\trule text 2:\n\t\t' + newtext2 + '\n'
 
         # Need to do Special Things if it's a planeswalker.
@@ -998,11 +999,11 @@ class Card:
             if self.__dict__[field_loyalty]:
                 outstr += '\tloyalty: ' + utils.from_unary(self.__dict__[field_loyalty]) + '\n'
 
-            newtext = newtext.replace('\n','\n\t\t')
+            newtext = newtext.replace('\n', '\n\t\t')
             outstr += '\trule text:\n\t\t' + newtext + '\n'
 
         else:
-            newtext = newtext.replace('\n','\n\t\t')
+            newtext = newtext.replace('\n', '\n\t\t')
             outstr += '\trule text:\n\t\t' + newtext + '\n'
 
         # now append all the other useless fields that the setfile expects.
@@ -1053,5 +1054,3 @@ class Card:
 
     def get_cmc(self):
         return self.__dict__[field_cost].cmc
-
-        
