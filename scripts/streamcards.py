@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+import sys
+import random
+import lib.utils as utils
+import lib.jdecode as jdecode
 
 # -- STOLEN FROM torch-rnn/scripts/streamfile.py -- #
 
@@ -30,7 +34,7 @@ def force_kill_self_noreturn():
     # to a normal exit() or sys.exit() because they're all blocked in write() calls
     # on full pipes; the simplest workaround seems to be to ask the OS to terminate us.
     # This kinda works, but...
-    #os.kill(os.getpid(), signal.SIGTERM)
+    # os.kill(os.getpid(), signal.SIGTERM)
     # psutil might have useful features like checking if the pid has been reused before killing it.
     # Also we might have child processes like l2e luajits to think about.
     me = psutil.Process(os.getpid())
@@ -69,19 +73,14 @@ def streaming_noreturn(fds, write_stream, mkargs):
 
 # -- END STOLEN FROM torch-rnn/scripts/streamfile.py -- #
 
-import sys
-import random
 
 libdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../lib')
 sys.path.append(libdir)
-import utils
-import jdecode
-import transforms
 
 def main(args):
     fds = args.fds
     fname = args.fname
-    block_size =  args.block_size
+    block_size = args.block_size
     main_seed = args.seed if args.seed != 0 else None
 
     # simple default encoding for now, will add more options with the curriculum
