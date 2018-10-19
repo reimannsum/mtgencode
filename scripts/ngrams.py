@@ -2,11 +2,12 @@
 import sys
 import os
 import pickle
+import lib.jdecode as jdecode
+import nltk_model as model
 
 libdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../lib')
 sys.path.append(libdir)
-import jdecode
-import nltk_model as model
+
 
 def update_ngrams(lines, gramdict, grams):
     for line in lines:
@@ -33,7 +34,7 @@ def describe_bins(gramdict, bins):
     
     for i in range(0, len(counts)):
         if counts[i] > 0:
-            print ('  ' + (str(bins[i]) if i < len(bins) else str(bins[-1]) + '+') 
+            print('  ' + (str(bins[i]) if i < len(bins) else str(bins[-1]) + '+')
                    + ': ' + str(counts[i]))
 
 def extract_language(cards, separate_lines = True):
@@ -75,12 +76,12 @@ def main(fname, oname, gmin = 2, gmax = 8, nltk = False, sep = False, verbose = 
     else:
         bins = [1, 2, 3, 10, 30, 100, 300, 1000]
         if gmin < 2 or gmax < gmin:
-            print 'invalid gram sizes: ' + str(gmin) + '-' + str(gmax)
+            print('invalid gram sizes: ' + str(gmin) + '-' + str(gmax))
             exit(1)
 
         for grams in range(gmin, gmax+1):
             if verbose:
-                print 'generating ' + str(grams) + '-grams...'
+                print('generating ' + str(grams) + '-grams...')
             gramdict = {}
             for card in cards:
                 update_ngrams(card.text_lines_words, gramdict, grams)
@@ -102,9 +103,9 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     
-    parser.add_argument('infile', #nargs='?'. default=None,
+    parser.add_argument('infile', # nargs='?'. default=None,
                         help='encoded card file or json corpus to process')
-    parser.add_argument('outfile', #nargs='?', default=None,
+    parser.add_argument('outfile', # nargs='?', default=None,
                         help='base name of output file, outputs ending in .2g, .3g etc. will be produced')
     parser.add_argument('-min', '--min', action='store', default='2',
                         help='minimum gram size to compute')
