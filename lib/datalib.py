@@ -25,7 +25,8 @@ def padrows(l):
     return padded
 def printrows(l):
     for row in l:
-        print row
+        print(row)
+
 
 # index management helpers
 def index_size(d):
