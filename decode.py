@@ -3,14 +3,15 @@ import sys
 import os
 import zipfile
 import shutil
-
-#libdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib')
-#sys.path.append(libdir)
-import lib.utils
-import lib.jdecode
-import lib.cardlib
+import lib.utils as utils
+import lib.jdecode as jdecode
+import lib.cardlib as cardlib
 from lib.cbow import CBOW
 from lib.namediff import Namediff
+
+# libdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib')
+# sys.path.append(libdir)
+
 
 def main(fname, oname = None, verbose = True, encoding = 'std',
          gatherer = False, for_forum = False, for_mse = False,
@@ -22,20 +23,20 @@ def main(fname, oname = None, verbose = True, encoding = 'std',
         print('ERROR - decode.py - incompatible formats "mse" and "html"')
         return
 
-    fmt_ordered = lib.cardlib.fmt_ordered_default
+    fmt_ordered = cardlib.fmt_labeled_default
 
     if encoding in ['std']:
         pass
     elif encoding in ['named']:
-        fmt_ordered = lib.cardlib.fmt_ordered_named
+        fmt_ordered = cardlib.fmt_ordered_named
     elif encoding in ['noname']:
-        fmt_ordered = lib.cardlib.fmt_ordered_noname
+        fmt_ordered = cardlib.fmt_ordered_noname
     elif encoding in ['rfields']:
         pass
     elif encoding in ['old']:
-        fmt_ordered = lib.cardlib.fmt_ordered_old
+        fmt_ordered = cardlib.fmt_ordered_old
     elif encoding in ['norarity']:
-        fmt_ordered = lib.cardlib.fmt_ordered_norarity
+        fmt_ordered = cardlib.fmt_ordered_norarity
     elif encoding in ['vec']:
         pass
     elif encoding in ['custom']:
@@ -46,7 +47,7 @@ def main(fname, oname = None, verbose = True, encoding = 'std',
     else:
         raise ValueError('encode.py: unknown encoding: ' + encoding)
 
-    cards = lib.jdecode.mtg_open_file(fname, verbose=verbose, fmt_ordered=fmt_ordered)
+    cards = jdecode.mtg_open_file(fname, verbose=verbose, fmt_ordered=fmt_ordered)
 
     if creativity:
         namediff = Namediff()
@@ -83,33 +84,26 @@ def main(fname, oname = None, verbose = True, encoding = 'std',
     def writecards(writer):
         if for_mse:
             # have to prepend a massive chunk of formatting info
-            writer.write(lib.utils.mse_prepend)
+            writer.write(utils.mse_prepend)
 
         if for_html:
             # have to preapend html info
-            writer.write(lib.utils.html_prepend)
+            writer.write(utils.html_prepend)
             # seperate the write function to allow for writing smaller chunks of cards at a time
             segments = sort_colors(cards)
             for i in range(len(segments)):
                 # sort color by type
                 segments[i] = sort_type(segments[i])
-
-
-                ## add internal loop to handle each card type and/or CMC
-                ## for adding navigation anchors to each subsection
-
-
-
-                # this allows card boxes to be colored for each color
-                # for coloring of each box seperately cardlib.Card.format() must change non-minimaly
-                writer.write('<div id="' + lib.utils.segment_ids[i] + '">')
+                # add internal loop to handle each card type and/or CMC
+                # for adding navigation anchors to each subsection
+                # this allows card boxes to be colored for each color 
+                # for coloring of each box seperately cardCard.format() must change non-minimaly
+                writer.write('<div id="' + utils.segment_ids[i] + '">')
                 writehtml(writer, segments[i])
                 writer.write("</div><hr>")
             # closing the html file
-            writer.write(lib.utils.html_append)
-            return #break out of the write cards funcrion to avoid writing cards twice
-
-
+            writer.write(utils.html_append)
+            return # break out of the write cards funcrion to avoid writing cards twice
         for card in cards:
             if for_mse:
                 writer.write(card.to_mse().encode('utf-8'))
@@ -147,7 +141,6 @@ def main(fname, oname = None, verbose = True, encoding = 'std',
             # more formatting info
             writer.write('version control:\n\ttype: none\napprentice code: ')
 
-
     def writehtml(writer, card_set):
         for card in card_set:
             fstring = card.format(gatherer = gatherer, for_forum = True,
@@ -183,7 +176,7 @@ def main(fname, oname = None, verbose = True, encoding = 'std',
         colorless_cards = []
         lands = []
         for card in card_set:
-            if len(card.get_colors())>1:
+            if len(card.get_colors()) > 1:
                 multi_cards += [card]
                 continue
             if 'R' in card.get_colors():
@@ -212,7 +205,7 @@ def main(fname, oname = None, verbose = True, encoding = 'std',
     # TODO: have this return each sorted set.
     def sort_type(card_set):
         sorting = ["creature", "enchantment", "instant", "sorcery", "artifact", "planeswalker"]
-        sorted_cards = [[],[],[],[],[],[],[]]
+        sorted_cards = [[], [], [], [], [], [], []]
         sorted_set = []
         for card in card_set:
             types = card.get_types()
@@ -228,8 +221,7 @@ def main(fname, oname = None, verbose = True, encoding = 'std',
                 sorted_set += [card]
         return sorted_set
 
-
-
+    # TODO: have this return each sorted set.
     def sort_cmc(card_set):
         sorted_cards = []
         sorted_set = []
@@ -240,15 +232,12 @@ def main(fname, oname = None, verbose = True, encoding = 'std',
             # add card to correct set of CMC values
             sorted_cards[card.get_cmc()] += [card]
 
-        #return sorted_cards
-
+        # return sorted_cards
         # combine each set of CMC valued cards together
         for value in sorted_cards:
             for card in value:
                 sorted_set += [card]
         return sorted_set
-
-
     if oname:
         if for_html:
             print(oname)
@@ -287,10 +276,10 @@ if __name__ == '__main__':
                         help='encoded card file or json corpus to encode')
     parser.add_argument('outfile', nargs='?', default=None,
                         help='output file, defaults to stdout')
-    parser.add_argument('-e', '--encoding', default='std', choices=lib.utils.formats,
-                        #help='{' + ','.join(formats) + '}',
+    parser.add_argument('-e', '--encoding', default='std', choices=utils.formats,
+                        # help='{' + ','.join(formats) + '}',
                         help='encoding format to use',
-    )
+                        )
     parser.add_argument('-g', '--gatherer', action='store_true',
                         help='emulate Gatherer visual spoiler')
     parser.add_argument('-f', '--forum', action='store_true',
