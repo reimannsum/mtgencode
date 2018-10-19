@@ -183,7 +183,7 @@ class NgramModel(ModelI):
         :type context: list(str)
         """
         context = tuple(context)
-        if (context + (word,) in self._ngrams) or (self.is_unigram_model):
+        if (context + (word,) in self._ngrams) or self.is_unigram_model:
             return self._model[context].prob(word)
         else:
             return self._alpha(context) * self._backoff.prob(word, context[1:])
@@ -223,26 +223,26 @@ class NgramModel(ModelI):
         return self._model
 
     def choose_random_word(self, context):
-        '''
+        """
         Randomly select a word that is likely to appear in this context.
 
         :param context: the context the word is in
         :type context: list(str)
-        '''
+        """
 
         return self.generate(1, context)[-1]
 
     # NB, this will always start with same word if the model
     # was trained on a single text
     def generate(self, num_words, context=()):
-        '''
+        """
         Generate random text based on the language model.
 
         :param num_words: number of words to generate
         :type num_words: int
         :param context: initial words in generated string
         :type context: list(str)
-        '''
+        """
 
         text = list(context)
         for i in range(num_words):
