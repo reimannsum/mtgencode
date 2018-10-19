@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 import sys
 import os
-import re
 import json
+import lib.utils as utils
+import lib.jdecode as jdecode
+import lib.transforms as transforms
 
 libdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../lib')
 sys.path.append(libdir)
-import utils
-import jdecode
-import cardlib
-import transforms
+
 
 def check_lines(fname):
     cards = jdecode.mtg_open_file(fname, verbose=True, linetrans=True)
@@ -25,8 +24,7 @@ def check_lines(fname):
              'cumulative', 'dash', 'entwine', 'evoke', 'fortify',
              'flashback', 'madness', 'morph', 'megamorph', 'miracle', 'ninjutsu',
              'overload', 'prowl', 'recover', 'reinforce', 'replicate', 'scavenge',
-             'splice', 'surge', 'unearth', 'transfigure', 'transmute',
-    ]
+             'splice', 'surge', 'unearth', 'transfigure', 'transmute']
     known = []
 
     for card in cards:
@@ -91,7 +89,7 @@ def check_lines(fname):
 
     print('\nmainlines')
     for line in sorted(mainlines):
-        #if any(s in line for s in ['champion', 'devour', 'tribute']):
+        # if any(s in line for s in ['champion', 'devour', 'tribute']):
         print(line)
 
 def check_vocab(fname):
@@ -103,7 +101,7 @@ def check_vocab(fname):
         if card.bside:
             words += card.bside.text.vectorize().split()
         for word in words:
-            if not word in vocab:
+            if  word not in vocab:
                 vocab[word] = 1
             else:
                 vocab[word] += 1
@@ -119,7 +117,7 @@ def check_vocab(fname):
             words += card.bside.text.vectorize().split()
         for word in words:
             if vocab[word] <= n:
-            #if 'name' in word:
+                # if 'name' in word:
                 print('\n{:8d} : {:s}'.format(vocab[word], word))
                 print(card.encode())
                 break
@@ -132,8 +130,8 @@ def check_characters(fname, vname):
         for c in card.encode():
             tokens.add(c)
 
-    token_to_idx = {tok:i+1 for i, tok in enumerate(sorted(tokens))}
-    idx_to_token = {i+1:tok for i, tok in enumerate(sorted(tokens))}
+    token_to_idx = {tok: i+1 for i, tok in enumerate(sorted(tokens))}
+    idx_to_token = {i+1: tok for i, tok in enumerate(sorted(tokens))}
 
     print('Vocabulary: ({:d} symbols)'.format(len(token_to_idx)))
     for token in sorted(token_to_idx):
