@@ -274,7 +274,7 @@ def mana_alt(sym):
 
 # produce intended neural net output format
 def mana_sym_to_encoding(sym):
-    if not sym in mana_symall:
+    if sym not in mana_symall:
         raise ValueError('invalid mana symbol for mana_sym_to_encoding(): ' + repr(sym))
     if len(sym) < 2:
         return sym * 2
@@ -283,7 +283,7 @@ def mana_sym_to_encoding(sym):
 
 # produce json formatting used in mtgjson
 def mana_sym_to_json(sym):
-    if not sym in mana_symall:
+    if sym not in mana_symall:
         raise ValueError('invalid mana symbol for mana_sym_to_json(): ' + repr(sym))
     if len(sym) < 2:
         return mana_json_open_delimiter + sym + mana_json_close_delimiter
@@ -294,7 +294,7 @@ def mana_sym_to_json(sym):
 # produce pretty formatting that renders on mtgsalvation forum
 # converts individual symbols; surrounding [mana][/mana] tags are added elsewhere
 def mana_sym_to_forum(sym):
-    if not sym in mana_symall:
+    if sym not in mana_symall:
         raise ValueError('invalid mana symbol for mana_sym_to_forum(): ' + repr(sym))
     if sym in mana_symalt:
         sym = mana_alt(sym)
