@@ -4,13 +4,13 @@ import os
 import zipfile
 import shutil
 
-libdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib')
-sys.path.append(libdir)
-import utils
-import jdecode
-import cardlib
-from cbow import CBOW
-from namediff import Namediff
+#libdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib')
+#sys.path.append(libdir)
+import lib.utils
+import lib.jdecode
+import lib.cardlib
+from lib.cbow import CBOW
+from lib.namediff import Namediff
 
 def main(fname, oname = None, verbose = True, encoding = 'std',
          gatherer = False, for_forum = False, for_mse = False,
@@ -19,49 +19,49 @@ def main(fname, oname = None, verbose = True, encoding = 'std',
     # there is a sane thing to do here (namely, produce both at the same time)
     # but we don't support it yet.
     if for_mse and for_html:
-        print 'ERROR - decode.py - incompatible formats "mse" and "html"'
+        print('ERROR - decode.py - incompatible formats "mse" and "html"')
         return
 
-    fmt_ordered = cardlib.fmt_ordered_default
+    fmt_ordered = lib.cardlib.fmt_ordered_default
 
     if encoding in ['std']:
         pass
     elif encoding in ['named']:
-        fmt_ordered = cardlib.fmt_ordered_named
+        fmt_ordered = lib.cardlib.fmt_ordered_named
     elif encoding in ['noname']:
-        fmt_ordered = cardlib.fmt_ordered_noname
+        fmt_ordered = lib.cardlib.fmt_ordered_noname
     elif encoding in ['rfields']:
         pass
     elif encoding in ['old']:
-        fmt_ordered = cardlib.fmt_ordered_old
+        fmt_ordered = lib.cardlib.fmt_ordered_old
     elif encoding in ['norarity']:
-        fmt_ordered = cardlib.fmt_ordered_norarity
+        fmt_ordered = lib.cardlib.fmt_ordered_norarity
     elif encoding in ['vec']:
         pass
     elif encoding in ['custom']:
         ## put custom format decisions here ##########################
-        
+
         ## end of custom format ######################################
         pass
     else:
         raise ValueError('encode.py: unknown encoding: ' + encoding)
 
-    cards = jdecode.mtg_open_file(fname, verbose=verbose, fmt_ordered=fmt_ordered)
+    cards = lib.jdecode.mtg_open_file(fname, verbose=verbose, fmt_ordered=fmt_ordered)
 
     if creativity:
         namediff = Namediff()
         cbow = CBOW()
         if verbose:
-            print 'Computing nearest names...'
+            print('Computing nearest names...')
         nearest_names = namediff.nearest_par(map(lambda c: c.name, cards), n=3)
         if verbose:
-            print 'Computing nearest cards...'
+            print('Computing nearest cards...')
         nearest_cards = cbow.nearest_par(cards)
         for i in range(0, len(cards)):
             cards[i].nearest_names = nearest_names[i]
             cards[i].nearest_cards = nearest_cards[i]
         if verbose:
-            print '...Done.'
+            print('...Done.')
 
     def hoverimg(cardname, dist, nd):
         truename = nd.names[cardname]
@@ -69,7 +69,7 @@ def main(fname, oname = None, verbose = True, encoding = 'std',
         namestr = ''
         if for_html:
             if code:
-                namestr = ('<div class="hover_img"><a href="#">' + truename 
+                namestr = ('<div class="hover_img"><a href="#">' + truename
                            + '<span><img style="background: url(http://magiccards.info/scans/en/' + code
                            + ');" alt=""/></span></a>' + ': ' + str(dist) + '\n</div>\n')
             else:
@@ -78,16 +78,16 @@ def main(fname, oname = None, verbose = True, encoding = 'std',
             namestr = '[card]' + truename + '[/card]' + ': ' + str(dist) + '\n'
         else:
             namestr = truename + ': ' + str(dist) + '\n'
-        return namestr 
+        return namestr
 
     def writecards(writer):
         if for_mse:
             # have to prepend a massive chunk of formatting info
-            writer.write(utils.mse_prepend)
+            writer.write(lib.utils.mse_prepend)
 
         if for_html:
             # have to preapend html info
-            writer.write(utils.html_prepend)
+            writer.write(lib.utils.html_prepend)
             # seperate the write function to allow for writing smaller chunks of cards at a time
             segments = sort_colors(cards)
             for i in range(len(segments)):
@@ -100,13 +100,13 @@ def main(fname, oname = None, verbose = True, encoding = 'std',
 
 
 
-                # this allows card boxes to be colored for each color 
+                # this allows card boxes to be colored for each color
                 # for coloring of each box seperately cardlib.Card.format() must change non-minimaly
-                writer.write('<div id="' + utils.segment_ids[i] + '">')
+                writer.write('<div id="' + lib.utils.segment_ids[i] + '">')
                 writehtml(writer, segments[i])
                 writer.write("</div><hr>")
             # closing the html file
-            writer.write(utils.html_append)
+            writer.write(lib.utils.html_append)
             return #break out of the write cards funcrion to avoid writing cards twice
 
 
@@ -116,7 +116,7 @@ def main(fname, oname = None, verbose = True, encoding = 'std',
                 fstring = ''
                 if card.json:
                     fstring += 'JSON:\n' + card.json + '\n'
-                if card.raw: 
+                if card.raw:
                     fstring += 'raw:\n' + card.raw + '\n'
                 fstring += '\n'
                 fstring += card.format(gatherer = gatherer, for_forum = for_forum,
@@ -146,7 +146,7 @@ def main(fname, oname = None, verbose = True, encoding = 'std',
         if for_mse:
             # more formatting info
             writer.write('version control:\n\ttype: none\napprentice code: ')
-            
+
 
     def writehtml(writer, card_set):
         for card in card_set:
@@ -209,7 +209,7 @@ def main(fname, oname = None, verbose = True, encoding = 'std',
         return[white_cards, blue_cards, black_cards, red_cards, green_cards, multi_cards, colorless_cards, lands]
 
 
-    # TODO: have this return each sorted set. 
+    # TODO: have this return each sorted set.
     def sort_type(card_set):
         sorting = ["creature", "enchantment", "instant", "sorcery", "artifact", "planeswalker"]
         sorted_cards = [[],[],[],[],[],[],[]]
@@ -241,7 +241,7 @@ def main(fname, oname = None, verbose = True, encoding = 'std',
             sorted_cards[card.get_cmc()] += [card]
 
         #return sorted_cards
-        
+
         # combine each set of CMC valued cards together
         for value in sorted_cards:
             for card in value:
@@ -251,29 +251,29 @@ def main(fname, oname = None, verbose = True, encoding = 'std',
 
     if oname:
         if for_html:
-            print oname
+            print(oname)
             # if ('.html' != oname[-])
             #     oname += '.html'
         if verbose:
-            print 'Writing output to: ' + oname
+            print('Writing output to: ' + oname)
         with open(oname, 'w') as ofile:
             writecards(ofile)
         if for_mse:
             # Copy whatever output file is produced, name the copy 'set' (yes, no extension).
             if os.path.isfile('set'):
-                print 'ERROR: tried to overwrite existing file "set" - aborting.'
+                print('ERROR: tried to overwrite existing file "set" - aborting.')
                 return
             shutil.copyfile(oname, 'set')
             # Use the freaky mse extension instead of zip.
             with zipfile.ZipFile(oname+'.mse-set', mode='w') as zf:
                 try:
                     # Zip up the set file into oname.mse-set.
-                    zf.write('set') 
+                    zf.write('set')
                 finally:
                     if verbose:
-                        print 'Made an MSE set file called ' + oname + '.mse-set.'
+                        print('Made an MSE set file called ' + oname + '.mse-set.')
                     # The set file is useless outside the .mse-set, delete it.
-                    os.remove('set') 
+                    os.remove('set')
     else:
         writecards(sys.stdout)
         sys.stdout.flush()
@@ -282,12 +282,12 @@ def main(fname, oname = None, verbose = True, encoding = 'std',
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    
+
     parser.add_argument('infile', #nargs='?'. default=None,
                         help='encoded card file or json corpus to encode')
     parser.add_argument('outfile', nargs='?', default=None,
                         help='output file, defaults to stdout')
-    parser.add_argument('-e', '--encoding', default='std', choices=utils.formats,
+    parser.add_argument('-e', '--encoding', default='std', choices=lib.utils.formats,
                         #help='{' + ','.join(formats) + '}',
                         help='encoding format to use',
     )
@@ -299,9 +299,9 @@ if __name__ == '__main__':
                         help='use CBOW fuzzy matching to check creativity of cards')
     parser.add_argument('-d', '--dump', action='store_true',
                         help='dump out lots of information about invalid cards')
-    parser.add_argument('-v', '--verbose', action='store_true', 
+    parser.add_argument('-v', '--verbose', action='store_true',
                         help='verbose output')
-    parser.add_argument('-mse', '--mse', action='store_true', 
+    parser.add_argument('-mse', '--mse', action='store_true',
                         help='use Magic Set Editor 2 encoding; will output as .mse-set file')
     parser.add_argument('-html', '--html', action='store_true', help='create a .html file with pretty forum formatting')
 
