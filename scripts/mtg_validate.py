@@ -3,11 +3,11 @@ import sys
 import os
 import re
 from collections import OrderedDict
+import lib.utils as utils
+import lib.jdecode as jdecode
 
 libdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../lib')
 sys.path.append(libdir)
-import utils
-import jdecode
 
 datadir = os.path.realpath(os.path.join(libdir, '../data'))
 gramdir = os.path.join(datadir, 'ngrams')
@@ -26,7 +26,7 @@ if os.path.isdir(gramdir):
             gramdicts[grams] = d
 
 def rare_grams(card, thresh = 2, grams = 2):
-    if not grams in gramdicts:
+    if grams not in gramdicts:
         return None
     rares = 0
     gramdict = gramdicts[grams]
@@ -419,8 +419,8 @@ def main(fname, oname = None, verbose = False, dump = False):
             else:
                 rg[g] = 1
             if g >= 60:
-                print g
-                print card.format()
+                print(g)
+                print(card.format())
 
         tot = 0
         vmax = sum(rg.values())
@@ -428,7 +428,7 @@ def main(fname, oname = None, verbose = False, dump = False):
         pct95 = None
         pct99 = None
         for i in sorted(rg):
-            print str(i) + ' rare ngrams: ' + str(rg[i])
+            print(str(i) + ' rare ngrams: ' + str(rg[i]))
             tot += rg[i]
             if pct90 is None and tot >= vmax * 0.90:
                 pct90 = i
@@ -437,9 +437,9 @@ def main(fname, oname = None, verbose = False, dump = False):
             if pct99 is None and tot >= vmax * 0.99:
                 pct99 = i
 
-        print '90% - ' + str(pct90)
-        print '95% - ' + str(pct95)
-        print '99% - ' + str(pct99)
+        print('90% - ' + str(pct90))
+        print('95% - ' + str(pct95))
+        print('99% - ' + str(pct99))
 
     else:
         ((total_all, total_good, total_bad, total_uncovered), 
