@@ -3,11 +3,11 @@
 import re
 import random
 
-import utils
+import lib.utils as utils
 
 class Manacost:
-    '''mana cost representation with data'''
-    
+    """mana cost representation with data"""
+
     # hardcoded to be dependent on the symbol structure... ah well
     def get_colors(self):
         colors = ''
@@ -22,7 +22,7 @@ class Manacost:
 
     def check_colors(self, symbolstring):
         for sym in symbolstring:
-            if not sym in self.colors:
+            if sym not in self.colors:
                 return False
         return True
 
@@ -65,8 +65,8 @@ class Manacost:
             idx = 0
             while idx < len(self.inner):
                 # taking this branch is an infinite loop if unary_marker is empty
-                if (len(utils.mana_unary_marker) > 0 and 
-                    self.inner[idx:idx+len(utils.mana_unary_marker)] == utils.mana_unary_marker):
+                if (len(utils.mana_unary_marker) > 0 and
+                self.inner[idx:idx+len(utils.mana_unary_marker)] == utils.mana_unary_marker):
                     idx += len(utils.mana_unary_marker)
                     self.sequence += [utils.mana_unary_marker]
                 elif self.inner[idx:idx+len(utils.mana_unary_counter)] == utils.mana_unary_counter:
@@ -111,7 +111,7 @@ class Manacost:
     def format(self, for_forum = False, for_html = False):
         if self.none:
             return '_NOCOST_'
-        
+
         else:
             return utils.mana_untranslate(utils.mana_open_delimiter + ''.join(self.sequence)
                                           + utils.mana_close_delimiter, for_forum, for_html)
@@ -121,7 +121,7 @@ class Manacost:
             return ''
         elif randomize:
             # so this won't work very well if mana_unary_marker isn't empty
-            return (utils.mana_open_delimiter 
+            return (utils.mana_open_delimiter
                     + ''.join(random.sample(self.sequence, len(self.sequence)))
                     + utils.mana_close_delimiter)
         else:
@@ -137,11 +137,11 @@ class Manacost:
             ld = ''
             rd = ''
         return ' '.join(map(lambda s: ld + s + rd, sorted(self.sequence)))
-        
+
 
 class Manatext:
-    '''text representation with embedded mana costs'''
-    
+    """text representation with embedded mana costs"""
+
     def __init__(self, src, fmt = ''):
         # source fields
         self.raw = None
@@ -151,14 +151,14 @@ class Manatext:
         # default values for all fields
         self.text = src
         self.costs = []
-        
+
         if fmt == 'json':
             self.json = src
             manastrs = re.findall(utils.mana_json_regex, src)
         else:
             self.raw = src
             manastrs = re.findall(utils.mana_regex, src)
-            
+
         for manastr in manastrs:
             cost = Manacost(manastr, fmt)
             if not cost.valid:
@@ -166,10 +166,10 @@ class Manatext:
             self.costs += [cost]
             self.text = self.text.replace(manastr, utils.reserved_mana_marker, 1)
 
-        if (utils.mana_open_delimiter in self.text 
-            or utils.mana_close_delimiter in self.text
-            or utils.mana_json_open_delimiter in self.text 
-            or utils.mana_json_close_delimiter in self.text):
+        if (utils.mana_open_delimiter in self.text
+        or utils.mana_close_delimiter in self.text
+        or utils.mana_json_open_delimiter in self.text
+        or utils.mana_json_close_delimiter in self.text):
             self.valid = False
 
     def __str__(self):
@@ -202,7 +202,7 @@ class Manatext:
                          utils.choice_open_delimiter,
                          utils.choice_close_delimiter,
                          utils.newline,
-                         #utils.x_marker,
+                         # utils.x_marker,
                          utils.tap_marker,
                          utils.untap_marker,
                          utils.newline,
