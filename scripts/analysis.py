@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import sys
 import os
-import re
 from collections import OrderedDict
 
 # scipy is kinda necessary
@@ -9,6 +8,9 @@ import scipy
 import scipy.stats
 import numpy as np
 import math
+import lib.jdecode as jdecode
+import scripts.mtg_validate as mtg_validate
+import scripts.ngrams as ngrams
 
 def mean_nonan(l):
     filtered = [x for x in l if not math.isnan(x)]
@@ -21,10 +23,7 @@ def gmean_nonzero(l):
 libdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../lib')
 sys.path.append(libdir)
 datadir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../data')
-import jdecode
 
-import mtg_validate
-import ngrams
 
 def annotate_values(values):
     for k in values:
@@ -109,7 +108,7 @@ def get_statistics(fname, lm = None, sep = False, verbose=False):
         stats['dists'] = dists
         
     # n-grams
-    if not lm is None:
+    if lm is not None:
         ngram = OrderedDict([('perp', []), ('perp_per', []), 
                              ('perp_max', []), ('perp_per_max', [])])
         for card in cards:
@@ -157,7 +156,7 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     
-    parser.add_argument('infile', #nargs='?'. default=None,
+    parser.add_argument('infile', # nargs='?'. default=None,
                         help='encoded card file or json corpus to process')
     parser.add_argument('-v', '--verbose', action='store_true', 
                         help='verbose output')
