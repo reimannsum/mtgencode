@@ -5,7 +5,7 @@ import random
 # These could probably use a little love... They tend to hardcode in lots
 # of things very specific to the mtgjson format.
 
-import utils
+import lib.utils as utils
 
 cardsep = utils.cardsep
 fieldsep = utils.fieldsep
@@ -122,7 +122,7 @@ def text_pass_4a_dashes(s):
     s = s.replace(reserved_marker, '-' + unary_marker)
     
     # level up is annoying
-    levels = re.findall(r'level &\^*\-&', s)
+    levels = re.findall(r'level &\^*-&', s)
     for level in levels:
         newlevel = level.replace('-', dash_marker)
         s = s.replace(level, newlevel)
@@ -192,7 +192,7 @@ def text_pass_5_counters(s):
         'ice counter',
         'fade counter',
         'pain counter',
-        #'age counter',
+        # 'age counter',
         'gold counter',
         'muster counter',
         'infection counter',
@@ -233,7 +233,7 @@ def text_pass_5_counters(s):
         'music counter',
         'pressure counter',
         'manifestation counter',
-        #'net counter',
+        # 'net counter',
         'velocity counter',
         'vitality counter',
         'treasure counter',
@@ -242,7 +242,7 @@ def text_pass_5_counters(s):
         'rust counter',
         'mire counter',
         'tower counter',
-        #'ore counter',
+        # 'ore counter',
         'cube counter',
         'strife counter',
         'elixir counter',
@@ -305,7 +305,7 @@ def text_pass_5_counters(s):
 # The word 'counter' is confusing when used to refer to what we do to spells
 # and sometimes abilities to make them not happen. Let's rename that.
 # Call this after doing the counter replacement to simplify the regexes.
-counter_rename = 'uncast'
+# counter_rename = 'uncast'
 def text_pass_6_uncast(s):
     # pre-checks to make sure we aren't doing anything dumb
     # if '% counter target ' in s or '^ counter target ' in s or '& counter target ' in s:
@@ -359,7 +359,7 @@ def text_pass_7_choice(s):
     # to '[n = ability = ability]\n'
     
     def choice_formatting_helper(s_helper, prefix, count, suffix = ''):
-        single_choices = re.findall(ur'(' + prefix + ur'\n?(\u2022.*(\n|$))+)', s_helper)
+        single_choices = re.findall(r'(' + prefix + r'\n?(\u2022.*(\n|$))+)', s_helper)
         for choice in single_choices:
             newchoice = choice[0]
             newchoice = newchoice.replace(prefix, unary_marker + (unary_counter * count) + suffix)
@@ -371,20 +371,20 @@ def text_pass_7_choice(s):
             s_helper = s_helper.replace(choice[0], newchoice)
         return s_helper
 
-    s = choice_formatting_helper(s, ur'choose one \u2014', 1)
-    s = choice_formatting_helper(s, ur'choose one \u2014 ', 1) # ty Promise of Power
-    s = choice_formatting_helper(s, ur'choose two \u2014', 2)
-    s = choice_formatting_helper(s, ur'choose two \u2014 ', 2) # ty Profane Command
-    s = choice_formatting_helper(s, ur'choose one or both \u2014', 0)
-    s = choice_formatting_helper(s, ur'choose one or more \u2014', 0)
-    s = choice_formatting_helper(s, ur'choose khans or dragons.', 1)
+    s = choice_formatting_helper(s, r'choose one \u2014', 1)
+    s = choice_formatting_helper(s, r'choose one \u2014 ', 1) # ty Promise of Power
+    s = choice_formatting_helper(s, r'choose two \u2014', 2)
+    s = choice_formatting_helper(s, r'choose two \u2014 ', 2) # ty Profane Command
+    s = choice_formatting_helper(s, r'choose one or both \u2014', 0)
+    s = choice_formatting_helper(s, r'choose one or more \u2014', 0)
+    s = choice_formatting_helper(s, r'choose khans or dragons.', 1)
     # this is for 'an opponent chooses one', which will be a bit weird but still work out
-    s = choice_formatting_helper(s, ur'chooses one \u2014', 1)
+    s = choice_formatting_helper(s, r'chooses one \u2014', 1)
     # Demonic Pact has 'choose one that hasn't been chosen'...
-    s = choice_formatting_helper(s, ur"choose one that hasn't been chosen \u2014", 1,
+    s = choice_formatting_helper(s, r"choose one that hasn't been chosen \u2014", 1,
                                  suffix=" that hasn't been chosen")
-    # 'choose n. you may choose the same mode more than once.'
-    s = choice_formatting_helper(s, ur'choose three. you may choose the same mode more than once.', 3,
+    # 'choose n. you may choose the name mode more than once.'
+    s = choice_formatting_helper(s, r'choose three. you may choose the same mode more than once.', 3,
                                  suffix='. you may choose the same mode more than once.')
 
     return s
@@ -409,7 +409,7 @@ def text_pass_8_equip(s):
         else:
             s = equip + '\n' + s
 
-    nonmana = re.findall(ur'(equip\u2014.*(\n|$))', s)
+    nonmana = re.findall(r'(equip\u2014.*(\n|$))', s)
     if len(nonmana) == 1:
         equip = nonmana[0][0]
         s = s.replace('\n' + equip, '')
@@ -454,7 +454,7 @@ def text_pass_11_linetrans(s):
         line = line.strip()
         if line == '':
             continue
-        if not '.' in line:
+        if '.' not in line:
             # because this is inconsistent
             line = line.replace(',', ';')
             line = line.replace('; where', ', where') # Thromok the Insatiable
@@ -470,7 +470,7 @@ def text_pass_11_linetrans(s):
                     postlines += [subline]
                 else:
                     keylines += [subline]
-        elif u'\u2014' in line and not u' \u2014 ' in line:
+        elif u'\u2014' in line and u' \u2014 ' not in line:
             if 'equip' in line or 'enchant' in line:
                 prelines += [line]
             elif 'countertype' in line or 'kicker' in line:
@@ -490,7 +490,7 @@ def text_pass_11_linetrans(s):
 def separate_lines(text):
     # forget about level up, ignore empty text too while we're at it
     if text == '' or 'level up' in text:
-        return [],[],[],[],[]
+        return [], [], [], [], []
     
     preline_search = ['equip', 'fortify', 'enchant ', 'bestow']
     # probably could use optimization with a regex
@@ -514,7 +514,7 @@ def separate_lines(text):
     lines = text.split(utils.newline)
     # we've already done linetrans once, so some of the irregularities have been simplified
     for line in lines:
-        if not '.' in line:
+        if '.' not in line:
             if any(line.startswith(s) for s in preline_search):
                 prelines.append(line)
             elif any(line.startswith(s) for s in postline_search):
@@ -585,7 +585,7 @@ def randomize_lines(text):
         random.shuffle(keylines)
         random.shuffle(new_mainlines)
         random.shuffle(costlines)
-        #random.shuffle(postlines) # only one kind ever (countertype)
+        # random.shuffle(postlines) # only one kind ever (countertype)
         return utils.newline.join(prelines+keylines+new_mainlines+costlines+postlines)
 
 
