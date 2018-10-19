@@ -89,6 +89,7 @@ def main(fname, oname, n=20, verbose=False):
     if verbose:
         print('computing nearest cards for ' + str(len(selected)) + ' candindates...')
     cbow_nearest = cbow.nearest_par(map(lambda (i, c): c, selected))
+
     for i in range(0, len(selected)):
         (j, card) = selected[i]
         selected[i] = (j, card, cbow_nearest[i])
