@@ -2,18 +2,15 @@
 # many, many other things wrote the original version of this code.
 # I have merely ported it to fit my needs.
 
-import re
-import sys
-import subprocess
+
 import os
 import struct
 import math
 import multiprocessing
 
-import utils
-import cardlib
-import transforms
-import namediff
+import lib.utils as utils
+import lib.cardlib as cardlib
+import lib.namediff as namediff
 
 libdir = os.path.dirname(os.path.realpath(__file__))
 datadir = os.path.realpath(os.path.join(libdir, '../data'))
@@ -25,7 +22,7 @@ cores = multiprocessing.cpu_count()
 max_w = 50
 
 
-#### snip! ####
+# ### snip! ####
 
 def read_vector_file(fname):
     with open(fname, 'rb') as f:
@@ -33,55 +30,56 @@ def read_vector_file(fname):
         size = int(f.read(4))
         vocab = [' '] * (words * max_w)
         M = []
-        for b in range(0,words):
+        for b in range(0, words):
             a = 0
             while True:
                 c = f.read(1)
-                vocab[b * max_w + a] = c;
+                vocab[b * max_w + a] = c
                 if len(c) == 0 or c == ' ':
                     break
                 if (a < max_w) and vocab[b * max_w + a] != '\n':
                     a += 1
-            tmp = list(struct.unpack('f'*size,f.read(4 * size)))
-            length = math.sqrt(sum([tmp[i] * tmp[i] for i in range(0,len(tmp))]))
-            for i in range(0,len(tmp)):
+            tmp = list(struct.unpack('f'*size, f.read(4 * size)))
+            length = math.sqrt(sum([tmp[i] * tmp[i] for i in range(0, len(tmp))]))
+            for i in range(0, len(tmp)):
                 tmp[i] /= length
             M.append(tmp)
-        return ((''.join(vocab)).split(),M)
+        return (''.join(vocab)).split(), M
 
-def makevector(vocabulary,vecs,sequence):
+def makevector(vocabulary, vecs, sequence):
     words = sequence.split()
     indices = []
     for word in words:
         if word not in vocabulary:
-            #print("Missing word in vocabulary: " + word)
+            # print("Missing word in vocabulary: " + word)
             continue
-            #return [0.0]*len(vecs[0])
+            # return [0.0]*len(vecs[0])
         indices.append(vocabulary.index(word))
-    #res = map(sum,[vecs[i] for i in indices])
+    # res = map(sum,[vecs[i] for i in indices])
     res = None
     for v in [vecs[i] for i in indices]:
-        if res == None:
+        if res is None:
             res = v
         else:
-            res = [x + y for x, y in zip(res,v)]
+            res = [x + y for x, y in zip(res, v)]
 
     # bad things happen if we have a vector of only unknown words
     if res is None:
         return [0.0]*len(vecs[0])
 
-    length = math.sqrt(sum([res[i] * res[i] for i in range(0,len(res))]))
-    for i in range(0,len(res)):
+    length = math.sqrt(sum([res[i] * res[i] for i in range(0, len(res))]))
+    for i in range(0, len(res)):
         res[i] /= length
     return res
 
-#### !snip ####
+# ### !snip ####
 
 
 try:
     import numpy
-    def cosine_similarity(v1,v2):
-        A = numpy.array([v1,v2])
+
+    def cosine_similarity(v1, v2):
+        A = numpy.array([v1, v2])
 
         # from http://stackoverflow.com/questions/17627219/whats-the-fastest-way-in-python-to-calculate-cosine-similarity-given-sparse-mat
 
@@ -108,8 +106,8 @@ try:
         return cosine[0][1]
 
 except ImportError:
-    def cosine_similarity(v1,v2):
-        #compute cosine similarity of v1 to v2: (v1 dot v1)/{||v1||*||v2||)
+    def cosine_similarity(v1, v2):
+        # compute cosine similarity of v1 to v2: (v1 dot v1)/{||v1||*||v2||)
         sumxx, sumxy, sumyy = 0, 0, 0
         for i in range(len(v1)):
             x = v1[i]; y = v2[i]
@@ -119,7 +117,7 @@ except ImportError:
         return sumxy/math.sqrt(sumxx*sumyy)
 
 def cosine_similarity_name(cardvec, v, name):
-    return (cosine_similarity(cardvec, v), name)
+    return cosine_similarity(cardvec, v), name
 
 # we need to put the logic in a regular function (as opposed to a method of an object)
 # so that we can pass the function to multiprocessing
@@ -157,17 +155,17 @@ class CBOW:
         self.cardvecs = []
 
         if self.verbose:
-            print 'Building a cbow model...'
+            print('Building a cbow model...')
 
         if self.verbose:
-            print '  Reading binary vector data from: ' + vector_fname
+            print('  Reading binary vector data from: ' + vector_fname)
         (vocab, vecs) = read_vector_file(vector_fname)
         self.vocab = vocab
         self.vecs = vecs
         
         if self.verbose:
-            print '  Reading encoded cards from: ' + card_fname
-            print '  They\'d better be in the same order as the file used to build the vector model!'
+            print('  Reading encoded cards from: ' + card_fname)
+            print('  They\'d better be in the same order as the file used to build the vector model!')
         with open(card_fname, 'rt') as f:
             text = f.read()
         for card_src in text.split(utils.cardsep):
@@ -179,10 +177,10 @@ class CBOW:
                                                     card.vectorize()))]
                 
         if self.verbose:
-            print '... Done.'
-            print '  vocab size: ' + str(len(self.vocab))
-            print '  raw vecs:   ' + str(len(self.vecs))
-            print '  card vecs:  ' + str(len(self.cardvecs))
+            print('... Done.')
+            print('  vocab size: ' + str(len(self.vocab)))
+            print('  raw vecs:   ' + str(len(self.vecs)))
+            print('  card vecs:  ' + str(len(self.cardvecs)))
 
     def nearest(self, card, n=5):
         return f_nearest(card, self.vocab, self.vecs, self.cardvecs, n)
